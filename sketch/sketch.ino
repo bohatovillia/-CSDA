@@ -1,7 +1,7 @@
+#include <ArduinoJson.h>
 #include <LittleFS.h>
 #include <WebServer.h>
 #include <WiFi.h>
-#include <ArduinoJson.h>
 
 // ─── Налаштування Wi-Fi та Пінів ──────────────────────────────
 const char *WIFI_SSID = "Wokwi-GUEST";
@@ -22,9 +22,6 @@ void handleApiStatus();
 void handleApiControl();
 void handleNotFound();
 
-// =============================================================
-//  ІНІЦІАЛІЗАЦІЯ
-// =============================================================
 void setup() {
   Serial.begin(115200);
   delay(500);
@@ -33,10 +30,8 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
 
-  Serial.println("\n╔══════════════════════════════════════════╗");
-  Serial.println("║   ESP32 Async REST API Server            ║");
-  Serial.println("║   Лабораторна робота — CSDA              ║");
-  Serial.println("╚══════════════════════════════════════════╝\n");
+  Serial.println("ESP32 Async REST API Server");
+  Serial.println("Лабораторна робота — CSDA");
 
   // Крок 1 — Ініціалізація файлової системи LittleFS
   initLittleFS();
@@ -47,7 +42,7 @@ void setup() {
   // Крок 3 — Реєстрація REST API ендпоінтів
   server.on("/api/status", HTTP_GET, handleApiStatus);
   server.on("/api/control", HTTP_POST, handleApiControl);
-  
+
   // Обробник для всіх інших запитів (Static Files)
   server.onNotFound(handleNotFound);
 
@@ -59,17 +54,7 @@ void setup() {
   Serial.println("─────────────────────────────────────────────");
 }
 
-// =============================================================
-//  ГОЛОВНИЙ ЦИКЛ
-// =============================================================
-void loop() {
-  server.handleClient();
-}
-
-// =============================================================
-//  ОБРОБНИКИ REST API (JSON)
-// =============================================================
-
+void loop() { server.handleClient(); }
 /**
  * GET /api/status
  * Повертає поточний стан LED у форматі JSON.
@@ -81,7 +66,7 @@ void handleApiStatus() {
   String response;
   serializeJson(doc, response);
   server.send(200, "application/json", response);
-  
+
   Serial.println("[API] GET /api/status -> " + response);
 }
 
@@ -109,19 +94,21 @@ void handleApiControl() {
   String command = doc["command"];
   if (command == "toggle") {
     ledState = !ledState;
-    digitalWrite(LED_PIN, ledState ? HIGH : LOW);
-    Serial.println("[API] POST /api/control -> Toggled LED!");
-    
-    server.send(200, "application/json", "{\"result\": \"ok\"}");
+  } else if (command == "on") {
+    ledState = true;
+  } else if (command == "off") {
+    ledState = false;
   } else {
     server.send(400, "application/json", "{\"error\": \"Unknown command\"}");
+    return;
   }
+
+  digitalWrite(LED_PIN, ledState ? HIGH : LOW);
+  Serial.print("[API] POST /api/control -> Command: ");
+  Serial.println(command);
+
+  server.send(200, "application/json", "{\"result\": \"ok\"}");
 }
-
-
-// =============================================================
-//  УТИЛІТАРНІ ФУНКЦІЇ
-// =============================================================
 
 /**
  * handleFileRead(String path)
@@ -130,13 +117,18 @@ void handleApiControl() {
  */
 bool handleFileRead(String path) {
   Serial.println("[FS] Читання: " + path);
-  if (path.endsWith("/")) path += "index.html";
+  if (path.endsWith("/"))
+    path += "index.html";
 
   String contentType = "text/plain";
-  if (path.endsWith(".html")) contentType = "text/html";
-  else if (path.endsWith(".css")) contentType = "text/css";
-  else if (path.endsWith(".js")) contentType = "application/javascript";
-  else if (path.endsWith(".json")) contentType = "application/json";
+  if (path.endsWith(".html"))
+    contentType = "text/html";
+  else if (path.endsWith(".css"))
+    contentType = "text/css";
+  else if (path.endsWith(".js"))
+    contentType = "application/javascript";
+  else if (path.endsWith(".json"))
+    contentType = "application/json";
 
   if (LittleFS.exists(path)) {
     File file = LittleFS.open(path, "r");

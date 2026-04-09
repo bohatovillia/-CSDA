@@ -23,15 +23,16 @@
         </div>
       </div>
 
-      <div class="control-panel">
-        <button id="toggleBtn" class="btn btn-toggle">Перемикнути LED</button>
+      <div class="control-panel" style="gap: 12px;">
+        <button id="onBtn" class="btn" style="background-color: var(--success);">Увімкнути</button>
+        <button id="offBtn" class="btn" style="background-color: var(--text-muted);">Вимкнути</button>
       </div>
     </div>
 
     <div class="card">
       <h2>&#9881; Що відбувається?</h2>
       <ul>
-        <li>При натисканні кнопки: <code>POST /api/control</code> з тілом <code>{"command":"toggle"}</code>.</li>
+        <li>При натисканні кнопок: <code>POST /api/control</code> з тілом <code>{"command":"on"}</code> або <code>"off"</code>.</li>
         <li>Авто-оновлення (кожні 5 сек): <code>GET /api/status</code> повертає <code>{"led_on": boolean}</code>.</li>
         <li>Усі дані передаються в форматі <b>JSON</b>. JSON парситься на контролері.</li>
       </ul>
@@ -46,7 +47,8 @@
     const virtualLed = document.getElementById('virtualLed');
     const statusDot = document.getElementById('statusDot');
     const statusText = document.getElementById('statusText');
-    const toggleBtn = document.getElementById('toggleBtn');
+    const onBtn = document.getElementById('onBtn');
+    const offBtn = document.getElementById('offBtn');
 
     // Оновлення UI на основі стану LED
     function setUIState(isOn) {
@@ -79,13 +81,13 @@
     }
 
     // POST запит для зміни стану
-    async function toggleLED() {
-      toggleBtn.disabled = true;
+    async function sendCommand(cmd, btn) {
+      btn.disabled = true;
       try {
         const response = await fetch('/api/control', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ command: 'toggle' })
+          body: JSON.stringify({ command: cmd })
         });
         
         if (response.ok) {
@@ -99,12 +101,13 @@
       } catch (error) {
         console.error("Помилка мережі при керуванні:", error);
       } finally {
-        toggleBtn.disabled = false;
+        btn.disabled = false;
       }
     }
 
-    // Прив'язка події до кнопки
-    toggleBtn.addEventListener('click', toggleLED);
+    // Прив'язка подій до кнопок
+    onBtn.addEventListener('click', () => sendCommand('on', onBtn));
+    offBtn.addEventListener('click', () => sendCommand('off', offBtn));
 
     // Initial fetch та запуск періодичного поллінгу кожні 5с
     fetchStatus();

@@ -1,27 +1,12 @@
-/**
- * ============================================================
- *  Лабораторна робота: Вбудований вебсервер на ESP32
- *  Дисципліна: CSDA
- * ============================================================
- *  Мета: Реалізувати HTTP-сервер на ESP32 з використанням
- *        LittleFS для зберігання html-контенту у Flash-пам'яті.
- *
- *  Компоненти:
- *    - ESP32 DevKit C V4 (в симуляторі Wokwi)
- *    - LittleFS  — файлова система у Flash
- *    - WebServer — HTTP-сервер на порту 80 (lwIP під капотом)
- * ============================================================
- */
-
-#include <WiFi.h>
-#include <WebServer.h>
 #include <LittleFS.h>
+#include <WebServer.h>
+#include <WiFi.h>
 
 // ─── Налаштування Wi-Fi ───────────────────────────────────────
 // У Wokwi-симуляції SSID/пароль не важливі — підключення
 // відбувається автоматично до віртуальної мережі Wokwi-GUEST.
-const char* WIFI_SSID     = "Wokwi-GUEST";
-const char* WIFI_PASSWORD = "";
+const char *WIFI_SSID = "Wokwi-GUEST";
+const char *WIFI_PASSWORD = "";
 
 // ─── HTTP-сервер на порту 80 ──────────────────────────────────
 WebServer server(80);
@@ -40,9 +25,9 @@ void setup() {
   delay(500);
 
   Serial.println("\n╔══════════════════════════════════════════╗");
-  Serial.println(  "║   ESP32 Embedded HTTP Web Server         ║");
-  Serial.println(  "║   Лабораторна робота — CSDA              ║");
-  Serial.println(  "╚══════════════════════════════════════════╝\n");
+  Serial.println("║   ESP32 Embedded HTTP Web Server         ║");
+  Serial.println("║   Лабораторна робота — CSDA              ║");
+  Serial.println("╚══════════════════════════════════════════╝\n");
 
   // Крок 1 — Ініціалізація файлової системи LittleFS
   initLittleFS();
@@ -51,7 +36,7 @@ void setup() {
   connectWiFi();
 
   // Крок 3 — Реєстрація HTTP-обробників
-  server.on("/",        HTTP_GET, handleRoot);
+  server.on("/", HTTP_GET, handleRoot);
   server.onNotFound(handleNotFound);
 
   // Крок 4 — Запуск сервера
@@ -114,7 +99,7 @@ void connectWiFi() {
 void initLittleFS() {
   Serial.println("[FS] Ініціалізація LittleFS...");
 
-  if (!LittleFS.begin(true)) {  // true = форматувати якщо не змонтовано
+  if (!LittleFS.begin(true)) { // true = форматувати якщо не змонтовано
     Serial.println("[FS] ✗ Помилка монтування LittleFS!");
     return;
   }
